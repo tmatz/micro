@@ -246,7 +246,7 @@ func Raw(args []string) {
 	curTab = len(tabs) - 1
 	if len(tabs) == 2 {
 		for _, t := range tabs {
-			for _, v := range t.views {
+			for _, v := range t.Views {
 				v.ToggleTabbar()
 			}
 		}
@@ -262,7 +262,7 @@ func TabSwitch(args []string) {
 
 			found := false
 			for _, t := range tabs {
-				v := t.views[t.CurView]
+				v := t.Views[t.CurView]
 				if v.Buf.GetName() == args[0] {
 					curTab = v.TabNum
 					found = true
@@ -293,7 +293,7 @@ func Cd(args []string) {
 		}
 		wd, _ := os.Getwd()
 		for _, tab := range tabs {
-			for _, view := range tab.views {
+			for _, view := range tab.Views {
 				if len(view.Buf.name) == 0 {
 					continue
 				}
@@ -444,7 +444,7 @@ func NewTab(args []string) {
 		curTab = len(tabs) - 1
 		if len(tabs) == 2 {
 			for _, t := range tabs {
-				for _, v := range t.views {
+				for _, v := range t.Views {
 					v.ToggleTabbar()
 				}
 			}
@@ -590,13 +590,15 @@ func Replace(args []string) {
 	replaceAll := func() {
 		var deltas []Delta
 		for i := 0; i < view.Buf.LinesNum(); i++ {
-			newText := regex.ReplaceAll(view.Buf.lines[i].data, replaceBytes)
+			newText := regex.ReplaceAllFunc(view.Buf.lines[i].data, func(in []byte) []byte {
+				found++
+				return replaceBytes
+			})
 
 			from := Loc{0, i}
 			to := Loc{utf8.RuneCount(view.Buf.lines[i].data), i}
 
 			deltas = append(deltas, Delta{string(newText), from, to})
-			found++
 		}
 		view.Buf.MultipleReplace(deltas)
 	}
